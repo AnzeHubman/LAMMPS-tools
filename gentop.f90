@@ -3,6 +3,12 @@
 !            September, 2020
 !  ======================================
 
+! ===================================================================================
+! This script can be used to generate random initial configuration of atoms.
+! The obtained topology is converted to LAMMPS topology format using fort2lmp.py
+! Slight modifications of this code can be used to generate multicomponent mixtures.
+! ===================================================================================
+
 program argon
   implicit none
 
