@@ -12,12 +12,11 @@
 using namespace std;
 
 // global
-const int n_atom   = 576;
-const int n_step   = 500000;
-const int n_samp   = 10;
-const int n_frames = (n_step/n_samp)+1;
-const int tau_max  = n_frames-10;
-string trj_file    = "velocity.dat";
+const int n_atom   = 576;                   // number of atoms
+const int n_step   = 500000;                // number of MD steps
+const int n_samp   = 10;                    // sampling frequency
+const int n_frames = (n_step/n_samp)+1;     // number of frames, LAMMPS also stores frame at t=0
+string trj_file    = "velocity.dat";        // trajectory file (format specification to be added)
 
 float vx[n_frames][n_atom];
 float vy[n_frames][n_atom];
@@ -49,7 +48,7 @@ int main()
   cout << "Trajectory read." << endl;
   infile.close();
 
-  // compute VACF
+  // compute VACF; averaging over all atoms and over specified time origins
   for (int tau = 0; tau < n_frames; tau++)
     {
 
@@ -77,7 +76,7 @@ int main()
 
   for (int i = 0; i < n_frames; i++)
   {
-    outfile << i*n_samp << " " << vacf[i] << "\n";
+    outfile << i*n_samp << " " << vacf[i]/vacf[0] << "\n";   // normalised
   }
   outfile.close();
 
