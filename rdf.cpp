@@ -186,7 +186,7 @@ int main()
 	  ry = h[1][0]*dsx + h[1][1]*dsy + h[1][2]*dsz;
 	  rz = h[2][0]*dsx + h[2][1]*dsy + h[2][2]*dsz;
 
-	  r  = sqrt(rx*rx + ry*ry + rz*rz);
+	  r  = sqrt(rx*rx + ry*ry + rz*rz);   // this is valid for orthorombic only, to be changed !!!
 
 	  //	  cout << i << " " << j << " " << r << endl; 
 
