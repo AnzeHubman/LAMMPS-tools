@@ -149,11 +149,111 @@ def find_bonds(type_i,type_j,atom_id,element,x,y,z,r_bond):
 
     return bonds
 
-# def find_angles(type_i,type_j,type_k,atom_id,element,x,y,z,r_bond_ij,r_bond_jk):
-#    ''' declares an angle ijk (j is the central atom) if d(i,j) <= r_bond_ij and d(j,k) <= r_bond_jk '''
+def read_poscar(filename='POSCAR',seldyn='no'):
+    ''' reads VASP POSCAR file, returns H matrix and Cartesian atomic coordinates;
+        seldyn declares whether Selective dynamics tag is present or not '''
+
+    # read POSCAR file
+    f = open(filename,'r')
+    tmp = []
+    for line in f:
+        q = line.strip('\n').split(' ')
+        l = []
+        for elt in q:
+            if (elt != '') and (elt != '\n'):
+                l.append(elt)
+        tmp.append(l)
+
+    # scaling factor
+    s = float(tmp[1][0])
+
+    # generate H matrix
+    ax = float(tmp[2][0])
+    ay = float(tmp[2][1])
+    az = float(tmp[2][2])
+    bx = float(tmp[3][0])
+    by = float(tmp[3][1])
+    bz = float(tmp[3][2])
+    cx = float(tmp[4][0])
+    cy = float(tmp[4][1])
+    cz = float(tmp[4][2])
+
+    H = generate_H_matrix(ax,ay,az,bx,by,bz,cx,cy,cz)
+
+    # species
+    species_type = tmp[5]
+    species_nmbr = tmp[6]
+
+    # coordinates
+    if (seldyn == 'no'):
+        crd_type = tmp[7][0]
+        i_start  = 8
+    if (seldyn == 'yes'):
+        crd_type = tmp[8][0]
+        i_start  = 9
+    
+    x = []
+    y = []
+    z = []
+
+    for i in range(i_start,len(tmp)):
+        x_tmp = float(tmp[i][0])
+        y_tmp = float(tmp[i][1])
+        z_tmp = float(tmp[i][2])
+
+        if (crd_type == 'Cartesian'):
+            x.append(s*x_tmp)
+            y.append(s*y_tmp)
+            z.append(s*z_tmp)
+
+        if (crd_type == 'Direct'):
+            frac = [x_tmp,y_tmp,z_tmp]
+            cart = np.dot(H,frac)
+            x.append(cart[0])
+            y.append(cart[1])
+            z.append(cart[2])
+
+    return x,y,z,H
+
+def radial_shift(x,y,z,r,H,fixed_index,move_index_start,move_index_end,move_index):
+    ''' shifts a moiety given in the topology file along a specified vector '''
+
+    # unit vector from fixed atom to chosen atom of a moving moiety 
+    pos_move  = []
+    for i in range(move_index_start-1,move_index_end):
+        pos_move.append([x[i],y[i],z[i]])
+
+    pos_move  = np.array(pos_move)
+    pos_fixed = np.array([x[fixed_index-1],y[fixed_index-1],z[fixed_index-1]])
+    ori_move  = np.array([x[move_index-1], y[move_index-1],z[move_index-1]])
+
+    r_0 = np.linalg.norm(ori_move-pos_fixed)
+
+    e = (ori_move - pos_fixed)/r_0
+
+    # shift molecule in the radial direction
+    shift_x = e[0]*(r-r_0)
+    shift_y = e[1]*(r-r_0)
+    shift_z = e[2]*(r-r_0)
+
+    n_move = move_index_end - move_index_start + 1
+    for i in range(n_move):
+        pos_move[i][0] += shift_x
+        pos_move[i][1] += shift_y
+        pos_move[i][2] += shift_z
+
+    # checks:
+    # a) if the final distance is correct
+    # b) if PBC affects the minimum distance. Note that currently shifting does not obey
+    #    the minimimum image convention. A more general implementation is planned. 
+    r_check = np.linalg.norm(pos_move[0] - pos_fixed)
+    r_check_pbc = distance_PBC(pos_move[0],pos_fixed,H)
+
+    print(r_0,r_check,r_check_pbc,np.abs(r_check-r_check_pbc))
+
+    return pos_move
 
 
-                            
                             
     
     
