@@ -9,8 +9,7 @@
 '''
 
 '''
-    This library is intended to handle general (e.g. triclinic) simulation box shapes which are
-    usually not supported in standard topology builders.
+    This module is intended to handle general (e.g. triclinic) simulation box shapes.
 
     Important note: this is currently development version. Several routines
                     will be added and extensively tested.
