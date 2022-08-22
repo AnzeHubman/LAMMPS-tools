@@ -5,6 +5,13 @@
 */
 
 
+/*
+
+  For compilation use g++ -O3 -mcmodel=medium
+
+*/
+
+
 #include <iostream>
 #include <fstream>
 #include <cmath>
