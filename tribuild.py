@@ -40,6 +40,45 @@ def generate_H_matrix(ax,ay,az,bx,by,bz,cx,cy,cz):
 
     return H
 
+def matrix_to_cell_parameters(H,mode='lammps'):
+    ''' convert H matrix to cell shape parameters a,b,c,alpha,beta,gamma
+        LAMMPS convention:   [ ax bx cx ]
+                             [ ay by cy ]
+                             [ az bz cz ]
+        
+        VASP convention:     [ ax ay az ]   
+                             [ bx by bz ]
+                             [ cx cy cz ]
+    '''
+
+    if (mode == 'vasp'):
+      H = np.transpose(H)
+      
+    elif (mode == 'lammps'):
+      continue
+    
+    else:
+      print('Specify format!')
+      
+    v1 = H[:,0]
+    v2 = H[:,1]
+    v3 = H[:,2]
+    
+    a = np.linalg.norm(v1)
+    b = np.linalg.norm(v2)
+    c = np.linalg.norm(v3)
+
+    alpha = np.arccos((np.dot(v2,v3)/(b*c)))
+    beta  = np.arccos((np.dot(v3,v1)/(c*a)))
+    gamma = np.arccos((np.dot(v1,v2)/(a*b)))
+
+    alpha = np.rad2deg(alpha)
+    beta  = np.rad2deg(beta)
+    gamma = np.rad2deg(gamma)
+
+    return a, b, c, alpha, beta, gamma          
+
+
 def invert_H_matrix(H):
     ''' compute inverse of H matrix '''
     
